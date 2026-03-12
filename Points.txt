@@ -1,0 +1,32 @@
+1. Feature Engineering
+Masalah Bisnis: Data dari gudang mencatat "Tanggal Terima" dan "Tanggal Kedaluwarsa", serta "Harga" yang ada $.
+Solusi :
+- Buang lambang dolarnya
+- Kurangi Tanggal Kedaluwarsa dengan Tanggal Terima untuk melahirkan kolom baru: Shelf_Life_Days (Umur Simpan dalam hitungan hari). Jika negatif, biarkan, karena asumsu bahwa barang datang dalam keadaan busuk 
+
+2. Data Filtering
+Masalah Bisnis: Ada produk yang masih berjalan (Active/Backordered) dan produk yang sudah dihentikan (Discontinued). Maka dari itu tidak perlu untuk mengevaluasi performa masa depan untuk  produk mati
+Solusi : Belah prosesnya jadi 2 pipeline
+- Pipeline 1 (Masa Depan): Hanya mengambil data Active & Backordered untuk mencari supplier optimal
+- Pipeline 2 (Masa Lalu): Hanya mengambil data Discontinued untuk mencari supplier mana yang pantas di-ban dan mana yang pantas di-revive
+
+3. Agregasi
+Masalah Bisnis: Di dalam bisnis supplier tidak mungkin hanya memasok satu kali, anggap sudah memasok 20x. Dalam waktu 20x tersebut kualitas barangnya tentu berbeda-beda sehingga tidak bisa dinilai hanya dalam satu kali periode memasok, sehingga perlu diagregasi untuk menentukan nilainya
+Solusi: Agregasi 20x baris transaksi menjadi 1 baris untuk perhitungan rata-rata
+Kolom yang diagregasi: 
+1.  Unit_Price (Rata-rata harga historis)
+2.  Turnover_Rate (Rata-rata kecepatan laku barang)
+3.  Shelf_Life_Days (Rata-rata umur simpan barang)
+
+4. Normalisasi
+Masalah Bisnis: Kita punya matriks agregasi berisi Harga, Umur, dan Kecepatan Laku. Kita tidak bisa menjumlahkan 5 Dolar + 20 Hari.
+Solusi: Kita pakai rumus Min-Max Scaling
+- Untuk Harga (Cost): Supplier paling murah di arena itu otomatis dapat poin 1.0 (Sempurna), yang paling mahal dapat 0.0.
+- Untuk Umur (Benefit): Supplier yang rata-rata barangnya paling awet dapat 1.0, yang sering kedaluwarsa dapat 0.0.
+
+5. Fase Penilaian (MCDM: SAW & TOPSIS)
+Masalah Bisnis: Semua sudah skala 0-1, tapi prioritas perusahaan bulan ini berbeda-beda. Manajer memasukkan bobot preferensi (misal: Harga 30%, Laku 20%, Umur Simpan 50%).
+Solusi:
+- SAW (Simple Additive Weighting): Sistem mengalikan skala 0-1 lalu dijumlahkan biasa. SAW akan mencari Supplier dengan akumulasi skor tertinggi.
+- TOPSIS (Pendekatan Geometri): Sistem menggambar "Titik Pemasok Paling Sempurna" dan "Titik Pemasok Paling Hancur" di ruang 3 Dimensi (karena ada 3 kriteria). TOPSIS lalu menghitung jarak menggunakan rumus Pythagoras. Pemenangnya adalah Supplier yang posisinya paling dekat dengan kesempurnaan, sekaligus paling jauh dari keburukan.
+
