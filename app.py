@@ -14,7 +14,7 @@ st.set_page_config(page_title="Supplier Intelligence DSS", page_icon="🏢", lay
 # ==========================================
 @st.cache_data
 def load_data():
-    df = pd.read_csv(r'data\supplier_data.csv')
+    df = pd.read_csv(r'data/supplier_data.csv')
     
     df['Status'] = df['Status'].astype(str).str.strip()
     df['Catagory'] = df['Catagory'].astype(str).str.strip()
